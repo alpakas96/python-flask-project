@@ -1,14 +1,17 @@
 # Import necessary modules
+# Import necessary modules
 from flask import Flask, request
 from peewee import *
 
 # Connect to the SQL database
-db = SqliteDatabase('my_database.db')
+db = SqliteDatabase('painting_database.db')
 
 # Create the model for the dataset
-class MyModel(Model):
-    field1 = CharField()
-    field2 = CharField()
+class Painting(Model):
+    title = CharField()
+    artist = CharField()
+    year = IntegerField()
+    headwear = CharField()
     
     class Meta:
         database = db
@@ -21,39 +24,41 @@ app = Flask(__name__)
 def create():
     # Extract the data from the request
     data = request.get_json()
-    field1 = data['field1']
-    field2 = data['field2']
+    title = data['title']
+    artist = data['artist']
+    year = data['year']
+    headwear = data['headwear']
     
     # Create a new record in the database
-    new_record = MyModel(field1=field1, field2=field2)
-    new_record.save()
+    new_painting = Painting(title=title, artist=artist, year=year, headwear=headwear)
+    new_painting.save()
     
     # Return success message
-    return {"message": "Record created successfully."}, 201
+    return {"message": "Painting added to database."}, 201
 
 # Create endpoint for Read operation
 @app.route('/read/<id>', methods=['GET'])
 def read(id):
     # Retrieve the specified record from the database
-    record = MyModel.get(MyModel.id == id)
+    painting = Painting.get(Painting.id == id)
     
     # Return the record data
-    return {"field1": record.field1, "field2": record.field2}, 200
+    return {"title": painting.title, "artist": painting.artist, "year": painting.year, "headwear": painting.headwear}, 200
 
 # Create endpoint for Delete operation
 @app.route('/delete/<id>', methods=['DELETE'])
 def delete(id):
     # Retrieve the specified record from the database
-    record = MyModel.get(MyModel.id == id)
+    painting = Painting.get(Painting.id == id)
     
     # Delete the record
-    record.delete_instance()
+    painting.delete_instance()
     
     # Return success message
-    return {"message": "Record deleted successfully."}, 200
+    return {"message": "Painting deleted from database."}, 200
 
 # Run the Flask app
 if __name__ == '__main__':
     db.connect()
-    db.create_tables([MyModel], safe=True)
+    db.create_tables([Painting], safe=True)
     app.run()
